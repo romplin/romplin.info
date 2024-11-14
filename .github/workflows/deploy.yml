@@ -28,4 +28,4 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > deploy_key
         chmod 600 deploy_key
         scp -i deploy_key -o StrictHostKeyChecking=no deploy.tar.gz ubuntu@$EC2_HOST:~
-        ssh -i deploy_key -o StrictHostKeyChecking=no ubuntu@$EC2_HOST './deploy.sh'
+        ssh -i deploy_key -o StrictHostKeyChecking=no ubuntu@$EC2_HOST './setup.sh'
