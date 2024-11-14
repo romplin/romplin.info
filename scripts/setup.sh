@@ -1,51 +1,46 @@
-# setup.sh
 #!/bin/bash
 
-# Install required packages if not present
+# Extract the deployment package
+cd ~
+tar -xzf deploy.tar.gz
+
+# Setup application directory
+mkdir -p ~/romplin.info
+mv romplin ~/romplin.info/
+cd ~/romplin.info
+
+# Install dependencies if needed
 if ! command -v nginx &> /dev/null; then
-    sudo yum update -y
-    sudo yum install -y nginx
+    sudo apt-get update
+    sudo apt-get install -y nginx golang
 fi
 
-if ! command -v go &> /dev/null; then
-    sudo yum install -y golang
-fi
-
-# Setup application
-APP_DIR="/home/ec2-user/romplin.info"
-sudo mkdir -p $APP_DIR
-sudo cp romplin $APP_DIR/
-sudo chown -R ec2-user:ec2-user $APP_DIR
+# Setup Nginx config
+sudo cp nginx/romplin.conf /etc/nginx/conf.d/
+sudo systemctl enable nginx
+sudo systemctl restart nginx
 
 # Setup systemd service
-sudo cat > /etc/systemd/system/romplin.service << 'EOL'
+sudo tee /etc/systemd/system/romplin.service << EOF
 [Unit]
 Description=Romplin Web Application
 After=network.target
 
 [Service]
 Type=simple
-User=ec2-user
-WorkingDirectory=/home/ec2-user/romplin.info
-ExecStart=/home/ec2-user/romplin.info/romplin
+User=ubuntu
+WorkingDirectory=/home/ubuntu/romplin.info
+ExecStart=/home/ubuntu/romplin.info/romplin
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
-EOL
+EOF
 
-# Setup Nginx
-sudo cp nginx/romplin.conf /etc/nginx/conf.d/
-sudo systemctl enable nginx
-sudo systemctl restart nginx
-
-# Start application
+# Start services
+sudo systemctl daemon-reload
 sudo systemctl enable romplin
 sudo systemctl restart romplin
 
-# Setup SSL if not already configured
-if [ ! -f /etc/letsencrypt/live/romplin.info/fullchain.pem ]; then
-    sudo dnf install -y python3-pip
-    sudo pip3 install certbot certbot-nginx
-    sudo certbot --nginx -d romplin.info -d www.romplin.info --non-interactive --agree-tos --email ${CERTBOT_EMAIL:-"your-email@example.com"}
-fi
+# Cleanup
+rm ~/deploy.tar.gz
