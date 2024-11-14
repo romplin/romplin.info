@@ -1,36 +1,73 @@
-// main.go
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"time"
 )
 
 func main() {
-	http.HandleFunc("/", handleIndex)
-	http.HandleFunc("/greet", handleGreet)
+	// Serve static files
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	fmt.Println("Server is running on http://localhost:8080")
+	// Route handlers
+	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/music", musicHandler)
+	http.HandleFunc("/store", storeHandler)
+
+	log.Println("Server starting at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("index.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
 		return
 	}
-	tmpl.Execute(w, nil)
+
+	tmpl, err := template.ParseFiles("templates/base.html", "templates/index.html")
+	if err != nil {
+		log.Printf("Template parsing error: %v", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	err = tmpl.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Printf("Template execution error: %v", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+}
+func musicHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("templates/base.html", "templates/music.html")
+	if err != nil {
+		log.Printf("Template parsing error: %v", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	err = tmpl.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Printf("Template execution error: %v", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
 }
 
-func handleGreet(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(1 * time.Second) // Simulate delay
-	name := r.FormValue("name")
-	if name == "" {
-		name = "World"
+func storeHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("templates/base.html", "templates/store.html")
+	if err != nil {
+		log.Printf("Template parsing error: %v", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
 	}
-	fmt.Fprintf(w, "Hello, %s! The time is %s", name, time.Now().Format(time.RFC1123))
+
+	err = tmpl.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Printf("Template execution error: %v", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
 }

@@ -1,0 +1,191 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{template "title" .}}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 18px; /* Base font size increased */
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.6;
+            display: flex;
+            font-size: 1.2rem; /* Larger default text size */
+        }
+
+        h1 { font-size: 3rem; } /* Larger headings */
+        h2 { font-size: 2.5rem; }
+        h3 { font-size: 2rem; }
+        
+        p { 
+            font-size: 1.2rem; 
+            margin-bottom: 1.5rem;
+        }
+
+        /* Vertical Navbar */
+        .navbar {
+            background-color: #333;
+            width: 250px; /* Made wider for larger text */
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem 0;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2.5rem; /* Increased gap */
+        }
+
+        .logo {
+            color: white;
+            font-size: 2rem; /* Larger logo */
+            text-decoration: none;
+            font-weight: bold;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 1rem; /* More space between links */
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 1.2rem; /* Larger padding */
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            font-size: 1.4rem; /* Larger nav links */
+        }
+
+        .nav-links a:hover {
+            background-color: #444;
+            color: #00ff00;
+        }
+
+        /* Main content area */
+        .main-content {
+            margin-left: 250px; /* Match navbar width */
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        .container {
+            padding: 3rem; /* More padding */
+            max-width: 1400px; /* Wider container */
+            margin: 0 auto;
+        }
+
+        /* Mobile menu button */
+        .menu-button {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem; /* Larger menu button */
+            cursor: pointer;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .navbar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .navbar.active {
+                transform: translateX(0);
+            }
+
+            .menu-button {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            body.nav-open {
+                overflow: hidden;
+            }
+
+            .navbar.active {
+                width: 100%;
+            }
+
+            .nav-links a {
+                font-size: 1.6rem; /* Even larger on mobile */
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="sidebar">
+        <div class="nav-container">
+            <a href="/" class="logo">romplin</a>
+            <div class="nav-links">
+                <a href="/">home</a>
+                <a href="/music">music</a>
+                <a href="/store">store</a>
+            </div>
+        </div>
+    </nav>
+
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
+
+    <div class="main-content">
+        <div class="container">
+            {{template "content" .}}
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const body = document.body;
+            sidebar.classList.toggle('active');
+            body.classList.toggle('nav-open');
+        }
+
+        // Close menu when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuButton = document.querySelector('.menu-button');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !menuButton.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                    document.body.classList.remove('nav-open');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,58 @@
+{{define "title"}}Home{{end}}
+{{define "content"}}
+<div class="home-content">
+    <h1 class="page-title">home</h1>
+    <div class="content-section">
+        <p class="welcome-text">hey it's romp, here's the stuff i make</p>
+        <div class="text-block">
+            <p><a href ="http://romplin-arena.com"> combat sports curator</a></p>
+            <p><a href ="http://romplin-dancefloor.com"> edm dance floor finder</a> </p>
+            <p><a href ="https://github.com/romplin"> my github</a> </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .home-content {
+        padding: 2rem 0;
+    }
+
+    .page-title {
+        font-size: 3.5rem;
+        margin-bottom: 2rem;
+        color: #333;
+    }
+
+    .content-section {
+        max-width: 1000px;
+        line-height: 1.8;
+    }
+
+    .welcome-text {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+        color: #555;
+    }
+
+    .text-block p {
+        margin-bottom: 1.5rem;
+        font-size: 1.4rem;
+    }
+
+    /* Add some subtle animations */
+    .page-title, .welcome-text {
+        animation: fadeIn 0.8s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{{end}}

@@ -1,0 +1,186 @@
+{{define "title"}}Store{{end}}
+{{define "content"}}
+<div class="store-content">
+    <h1 class="page-title">store</h1>
+    <div class="content-section">
+        <p class="welcome-text">coming soon</p>
+        
+        <div class="product-grid">
+            <!-- Product Cards -->
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="/api/placeholder/300/300" alt="Product 1">
+                </div>
+                <div class="product-info">
+                    <h3>Product Name</h3>
+                    <p class="price">$19.99</p>
+                    <p class="description">This is a description of the product. It explains what makes this item special.</p>
+                    <button class="buy-button">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="/api/placeholder/300/300" alt="Product 2">
+                </div>
+                <div class="product-info">
+                    <h3>Product Name</h3>
+                    <p class="price">$24.99</p>
+                    <p class="description">This is a description of the product. It explains what makes this item special.</p>
+                    <button class="buy-button">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="/api/placeholder/300/300" alt="Product 3">
+                </div>
+                <div class="product-info">
+                    <h3>Product Name</h3>
+                    <p class="price">$29.99</p>
+                    <p class="description">This is a description of the product. It explains what makes this item special.</p>
+                    <button class="buy-button">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="/api/placeholder/300/300" alt="Product 4">
+                </div>
+                <div class="product-info">
+                    <h3>Product Name</h3>
+                    <p class="price">$34.99</p>
+                    <p class="description">This is a description of the product. It explains what makes this item special.</p>
+                    <button class="buy-button">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .store-content {
+        padding: 2rem 0;
+    }
+
+    .page-title {
+        font-size: 3.5rem;
+        margin-bottom: 2rem;
+        color: #333;
+    }
+
+    .content-section {
+        max-width: 1200px;
+        line-height: 1.8;
+    }
+
+    .welcome-text {
+        font-size: 2rem;
+        margin-bottom: 3rem;
+        color: #555;
+    }
+
+    /* Product Grid */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 1rem 0;
+    }
+
+    /* Product Cards */
+    .product-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 300px;
+        overflow: hidden;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
+    }
+
+    .product-info {
+        padding: 1.5rem;
+    }
+
+    .product-info h3 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .price {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #2d5a3c;
+        margin-bottom: 1rem;
+    }
+
+    .description {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+
+    .buy-button {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.2rem;
+        background-color: #1a472a;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .buy-button:hover {
+        background-color: #2d5a3c;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .product-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .product-info h3 {
+            font-size: 1.6rem;
+        }
+
+        .price {
+            font-size: 1.4rem;
+        }
+
+        .description {
+            font-size: 1.1rem;
+        }
+
+        .buy-button {
+            padding: 0.8rem;
+            font-size: 1.1rem;
+        }
+    }
+</style>
+{{end}}

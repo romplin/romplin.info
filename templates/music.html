@@ -1,0 +1,30 @@
+{{define "title"}}Music{{end}}
+{{define "content"}}
+<div class="music-content">
+    <h1 class="message">mp3's are always free</h1>
+</div>
+
+<style>
+    .music-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 2rem;
+    }
+
+    .message {
+        font-size: 4rem;
+        color: #1a472a;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    /* Responsive text size */
+    @media (max-width: 768px) {
+        .message {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{{end}}
