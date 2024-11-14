@@ -23,9 +23,78 @@ jobs:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
+        # Build and package
         go build -o romplin
-        tar -czf deploy.tar.gz romplin scripts/* nginx/*
+        
+        # Create deployment scripts
+        mkdir -p scripts
+        cat > scripts/setup.sh << 'EOF'
+#!/bin/bash
+cd ~
+tar -xzf deploy.tar.gz
+
+# Setup application directory
+mkdir -p ~/romplin.info
+mv romplin ~/romplin.info/
+cd ~/romplin.info
+
+# Install dependencies
+sudo apt-get update
+sudo apt-get install -y nginx golang
+
+# Setup Nginx config
+sudo mkdir -p /etc/nginx/conf.d
+sudo tee /etc/nginx/conf.d/romplin.conf << 'NGINX'
+server {
+    listen 80;
+    server_name romplin.info www.romplin.info;
+    
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+NGINX
+
+sudo systemctl enable nginx
+sudo systemctl restart nginx
+
+# Setup systemd service
+sudo tee /etc/systemd/system/romplin.service << 'SYSTEMD'
+[Unit]
+Description=Romplin Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/romplin.info
+ExecStart=/home/ubuntu/romplin.info/romplin
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+SYSTEMD
+
+# Start services
+sudo systemctl daemon-reload
+sudo systemctl enable romplin
+sudo systemctl restart romplin
+
+# Cleanup
+rm ~/deploy.tar.gz
+EOF
+        
+        chmod +x scripts/setup.sh
+        tar -czf deploy.tar.gz romplin scripts/setup.sh
+        
+        # Setup SSH and deploy
         echo "$SSH_PRIVATE_KEY" > deploy_key
         chmod 600 deploy_key
+        
         scp -i deploy_key -o StrictHostKeyChecking=no deploy.tar.gz ubuntu@$EC2_HOST:~
-        ssh -i deploy_key -o StrictHostKeyChecking=no ubuntu@$EC2_HOST './setup.sh'
+        ssh -i deploy_key -o StrictHostKeyChecking=no ubuntu@$EC2_HOST 'chmod +x ~/deploy.tar.gz && tar -xzf deploy.tar.gz && ./scripts/setup.sh'
