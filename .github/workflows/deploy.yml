@@ -26,8 +26,8 @@ jobs:
         # Build the application
         go build -o romplin
         
-        # Package all files
-        tar -czf deploy.tar.gz romplin scripts/* nginx/* static/* templates/*
+        # Package files
+        tar -czf deploy.tar.gz romplin main.go scripts/* nginx/* static/* templates/*
         
         # Setup SSH
         echo "$SSH_PRIVATE_KEY" > deploy_key
@@ -39,16 +39,22 @@ jobs:
           cd ~
           tar -xzf deploy.tar.gz
           
+          # Stop service
+          sudo systemctl stop romplin
+          
+          # Update application
+          sudo rm -rf /var/www/romplin.info/*
           sudo mkdir -p /var/www/romplin.info
-          sudo cp -r static templates /var/www/romplin.info/
-          sudo cp romplin /var/www/romplin.info/
+          sudo cp -r romplin main.go static templates /var/www/romplin.info/
           sudo chown -R ubuntu:ubuntu /var/www/romplin.info
           
+          # Update nginx config
           sudo cp nginx/romplin.conf /etc/nginx/conf.d/
           sudo systemctl restart nginx
           
-          sudo systemctl stop romplin || true
-          sudo cp scripts/setup.sh /var/www/romplin.info/
-          chmod +x /var/www/romplin.info/setup.sh
-          cd /var/www/romplin.info && sudo ./setup.sh
+          # Start service
+          sudo systemctl start romplin
+          
+          # Cleanup
+          rm deploy.tar.gz
         "
