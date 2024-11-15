@@ -23,77 +23,40 @@ jobs:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
-        # Build Go application
+        # Build the application
         go build -o romplin
         
-        # Create setup script
-        mkdir -p scripts
-        echo '#!/bin/bash
-        
-        cd ~
-        tar -xzf deploy.tar.gz
-        
-        # Setup application directory
-        mkdir -p ~/romplin.info
-        mv romplin ~/romplin.info/
-        cd ~/romplin.info
-        
-        # Install dependencies
-        sudo apt-get update
-        sudo apt-get install -y nginx golang
-        
-        # Setup Nginx config
-        sudo mkdir -p /etc/nginx/conf.d
-        sudo tee /etc/nginx/conf.d/romplin.conf << EOF
-        server {
-            listen 80;
-            server_name romplin.info www.romplin.info;
-            
-            location / {
-                proxy_pass http://localhost:8080;
-                proxy_http_version 1.1;
-                proxy_set_header Upgrade \$http_upgrade;
-                proxy_set_header Connection "upgrade";
-                proxy_set_header Host \$host;
-                proxy_cache_bypass \$http_upgrade;
-            }
-        }
-        EOF
-        
-        sudo systemctl enable nginx
-        sudo systemctl restart nginx
-        
-        # Setup systemd service
-        sudo tee /etc/systemd/system/romplin.service << EOF
-        [Unit]
-        Description=Romplin Web Application
-        After=network.target
-        
-        [Service]
-        Type=simple
-        User=ubuntu
-        WorkingDirectory=/home/ubuntu/romplin.info
-        ExecStart=/home/ubuntu/romplin.info/romplin
-        Restart=always
-        
-        [Install]
-        WantedBy=multi-user.target
-        EOF
-        
-        # Start services
-        sudo systemctl daemon-reload
-        sudo systemctl enable romplin
-        sudo systemctl restart romplin
-        
-        # Cleanup
-        rm ~/deploy.tar.gz' > scripts/setup.sh
-        
-        chmod +x scripts/setup.sh
-        tar -czf deploy.tar.gz romplin scripts/setup.sh
+        # Package all files including static and templates
+        tar -czf deploy.tar.gz \
+          romplin \
+          scripts/* \
+          nginx/* \
+          static/* \
+          templates/*
         
         # Setup SSH and deploy
         echo "$SSH_PRIVATE_KEY" > deploy_key
         chmod 600 deploy_key
         
+        # Copy and extract files
         scp -i deploy_key -o StrictHostKeyChecking=no deploy.tar.gz ubuntu@$EC2_HOST:~
-        ssh -i deploy_key -o StrictHostKeyChecking=no ubuntu@$EC2_HOST 'chmod +x ~/deploy.tar.gz && tar -xzf deploy.tar.gz && ./scripts/setup.sh'
+        ssh -i deploy_key -o StrictHostKeyChecking=no ubuntu@$EC2_HOST 'bash -s' << 'ENDSSH'
+          cd ~
+          tar -xzf deploy.tar.gz
+          
+          # Setup application directory
+          sudo mkdir -p /var/www/romplin.info
+          sudo cp -r static templates /var/www/romplin.info/
+          sudo cp romplin /var/www/romplin.info/
+          sudo chown -R ubuntu:ubuntu /var/www/romplin.info
+          
+          # Setup nginx
+          sudo cp nginx/romplin.conf /etc/nginx/conf.d/
+          sudo systemctl restart nginx
+          
+          # Setup and start application
+          sudo systemctl stop romplin || true
+          sudo cp scripts/setup.sh /var/www/romplin.info/
+          chmod +x /var/www/romplin.info/setup.sh
+          cd /var/www/romplin.info && sudo ./setup.sh
+ENDSSH
