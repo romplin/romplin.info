@@ -4,29 +4,43 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 )
 
 func main() {
+	// Use absolute paths
+	templatesDir := "/var/www/romplin.info/templates"
+	staticDir := "/var/www/romplin.info/static"
+
 	// Serve static files
-	fs := http.FileServer(http.Dir("static"))
+	fs := http.FileServer(http.Dir(staticDir))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// Route handlers
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/music", musicHandler)
-	http.HandleFunc("/store", storeHandler)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		homeHandler(w, r, templatesDir)
+	})
+	http.HandleFunc("/music", func(w http.ResponseWriter, r *http.Request) {
+		musicHandler(w, r, templatesDir)
+	})
+	http.HandleFunc("/store", func(w http.ResponseWriter, r *http.Request) {
+		storeHandler(w, r, templatesDir)
+	})
 
-	log.Println("Server starting at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Server starting on 0.0.0.0:8080")
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
+func homeHandler(w http.ResponseWriter, r *http.Request, templatesDir string) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
 
-	tmpl, err := template.ParseFiles("templates/base.html", "templates/index.html")
+	tmpl, err := template.ParseFiles(
+		filepath.Join(templatesDir, "base.html"),
+		filepath.Join(templatesDir, "index.html"),
+	)
 	if err != nil {
 		log.Printf("Template parsing error: %v", err)
 		http.Error(w, "Internal Server Error", 500)
@@ -40,8 +54,12 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-func musicHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/base.html", "templates/music.html")
+
+func musicHandler(w http.ResponseWriter, r *http.Request, templatesDir string) {
+	tmpl, err := template.ParseFiles(
+		filepath.Join(templatesDir, "base.html"),
+		filepath.Join(templatesDir, "music.html"),
+	)
 	if err != nil {
 		log.Printf("Template parsing error: %v", err)
 		http.Error(w, "Internal Server Error", 500)
@@ -56,8 +74,11 @@ func musicHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func storeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/base.html", "templates/store.html")
+func storeHandler(w http.ResponseWriter, r *http.Request, templatesDir string) {
+	tmpl, err := template.ParseFiles(
+		filepath.Join(templatesDir, "base.html"),
+		filepath.Join(templatesDir, "store.html"),
+	)
 	if err != nil {
 		log.Printf("Template parsing error: %v", err)
 		http.Error(w, "Internal Server Error", 500)
