@@ -26,37 +26,29 @@ jobs:
         # Build the application
         go build -o romplin
         
-        # Package all files including static and templates
-        tar -czf deploy.tar.gz \
-          romplin \
-          scripts/* \
-          nginx/* \
-          static/* \
-          templates/*
+        # Package all files
+        tar -czf deploy.tar.gz romplin scripts/* nginx/* static/* templates/*
         
-        # Setup SSH and deploy
+        # Setup SSH
         echo "$SSH_PRIVATE_KEY" > deploy_key
         chmod 600 deploy_key
         
-        # Copy and extract files
+        # Deploy
         scp -i deploy_key -o StrictHostKeyChecking=no deploy.tar.gz ubuntu@$EC2_HOST:~
-        ssh -i deploy_key -o StrictHostKeyChecking=no ubuntu@$EC2_HOST 'bash -s' << 'ENDSSH'
+        ssh -i deploy_key -o StrictHostKeyChecking=no ubuntu@$EC2_HOST "
           cd ~
           tar -xzf deploy.tar.gz
           
-          # Setup application directory
           sudo mkdir -p /var/www/romplin.info
           sudo cp -r static templates /var/www/romplin.info/
           sudo cp romplin /var/www/romplin.info/
           sudo chown -R ubuntu:ubuntu /var/www/romplin.info
           
-          # Setup nginx
           sudo cp nginx/romplin.conf /etc/nginx/conf.d/
           sudo systemctl restart nginx
           
-          # Setup and start application
           sudo systemctl stop romplin || true
           sudo cp scripts/setup.sh /var/www/romplin.info/
           chmod +x /var/www/romplin.info/setup.sh
           cd /var/www/romplin.info && sudo ./setup.sh
-ENDSSH
+        "
